@@ -10,10 +10,19 @@
 	<body>
 		<main id="root" class="pending">
 			<segmented-xy
-				x-segments="downtime social intrigue travel exploration mystery stealth combat boss"
-				y-segments="a b c d e f"
+				x-segments="exploration combat"
+				y-segments="pensive hopeful"
 			>
 			</segmented-xy>
+
+			<label>
+				<input type="radio" name="location" checked />
+				dungeon
+			</label>
+			<label>
+				<input type="radio" name="location" />
+				wilderness
+			</label>
 		</main>
 
 		<script type="module" src="./src/index.ts"></script>

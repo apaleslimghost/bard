@@ -111,7 +111,7 @@ class SegmentedXY extends HTMLElement {
 			.labels {
 				position: absolute;
 				display: flex;
-				justify-content: space-evenly;
+				justify-content: space-between;
 			}
 
 			.labels.x {
@@ -121,7 +121,7 @@ class SegmentedXY extends HTMLElement {
 
 			.labels.y {
 				height: 100%;
-				flex-direction: column;
+				writing-mode: vertical-rl;
 				left: -1rem;
 			}
 		`;
@@ -141,6 +141,7 @@ customElements.define("segmented-xy", SegmentedXY);
 root.addEventListener("click", async () => {
 	if (root.classList.contains("pending")) {
 		await Tone.start();
+		Tone.getTransport().start("0");
 		root.classList.remove("pending");
 	}
 });
