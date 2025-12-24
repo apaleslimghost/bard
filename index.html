@@ -10,19 +10,16 @@
 	<body>
 		<main id="root" class="pending">
 			<segmented-xy
+				id="ouija"
 				x-segments="exploration combat"
 				y-segments="pensive hopeful"
 			>
 			</segmented-xy>
 
-			<label>
-				<input type="radio" name="location" checked />
-				dungeon
-			</label>
-			<label>
-				<input type="radio" name="location" />
-				wilderness
-			</label>
+			<location-select
+				id="locations"
+				locations="wilderness dungeon"
+			></location-select>
 		</main>
 
 		<script type="module" src="./src/index.ts"></script>

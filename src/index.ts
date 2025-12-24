@@ -1,16 +1,28 @@
 import * as Tone from "tone";
+import scenes from "./scenes";
+import layers from "./layers";
 
 const root = document.getElementById("root")!;
+const ouija = document.getElementById("ouija")! as SegmentedXY;
+const locations = document.getElementById("locations")! as LocationSelect;
+
+type WithLoadPromise<T extends object> = T & {
+	promise: Promise<null>;
+};
+
+type Pos = [number, number];
+
+const hasLoadPromise = <T extends object>(o: T): o is WithLoadPromise<T> =>
+	"promise" in o && o.promise instanceof Promise;
 
 class SegmentedXY extends HTMLElement {
 	static observedAttributes = ["x-segments", "y-segments"];
 
-	position = [0, 0];
+	position: Pos = [0, 0];
 
 	surface: HTMLDivElement;
 	dot: HTMLDivElement;
 	status: HTMLSpanElement;
-	moving = false;
 
 	constructor() {
 		super();
@@ -21,8 +33,6 @@ class SegmentedXY extends HTMLElement {
 	}
 
 	setPosition(event: MouseEvent) {
-		if (!this.moving) return;
-
 		const xSegments = this.getAttribute("x-segments")?.split(" ") ?? [];
 		const ySegments = this.getAttribute("y-segments")?.split(" ") ?? [];
 
@@ -52,6 +62,14 @@ class SegmentedXY extends HTMLElement {
 
 		this.dot.style.left = `${event.x - x}px`;
 		this.dot.style.top = `${event.y - y}px`;
+
+		this.dispatchEvent(
+			new CustomEvent("move", {
+				detail: {
+					position: this.position,
+				},
+			}),
+		);
 	}
 
 	connectedCallback() {
@@ -80,9 +98,7 @@ class SegmentedXY extends HTMLElement {
 		this.status.style.color = "black";
 		this.dot.classList.add("dot");
 
-		this.surface.addEventListener("mousedown", () => (this.moving = true));
-		this.surface.addEventListener("mouseup", () => (this.moving = false));
-		this.surface.addEventListener("mousemove", this.setPosition.bind(this));
+		this.surface.addEventListener("mousedown", this.setPosition.bind(this));
 
 		const shadow = this.attachShadow({ mode: "open" });
 
@@ -136,12 +152,107 @@ class SegmentedXY extends HTMLElement {
 	}
 }
 
+class LocationSelect extends HTMLElement {
+	static observedAttributes = ["locations"];
+
+	location: string;
+
+	constructor() {
+		super();
+		const locations = this.getAttribute("locations")?.split(" ") ?? [];
+		this.location = locations[0];
+	}
+
+	connectedCallback() {
+		const locations = this.getAttribute("locations")?.split(" ") ?? [];
+		this.location = locations[0];
+
+		const shadow = this.attachShadow({ mode: "open" });
+
+		for (const location of locations) {
+			const label = document.createElement("label");
+			const input = document.createElement("input");
+			input.type = "radio";
+			input.name = "location";
+			input.value = location;
+			input.checked = location === this.location;
+
+			input.addEventListener("input", () => {
+				this.dispatchEvent(
+					new CustomEvent("change", { detail: { location } }),
+				);
+			});
+
+			label.appendChild(input);
+			label.appendChild(document.createTextNode(location));
+			shadow.appendChild(label);
+		}
+	}
+}
+
 customElements.define("segmented-xy", SegmentedXY);
+customElements.define("location-select", LocationSelect);
+
+ouija.addEventListener("move", () => buildScene(false));
+locations.addEventListener("change", () => buildScene(false));
+
+const chebyshev = (p1: Pos, p2: Pos) =>
+	Math.max(Math.abs(p1[0] - p2[0]), Math.abs(p1[1] - p2[1]));
+
+/*
+TODO
+- track currently/previously playing location/scene and fade out
+*/
+
+function buildScene(initial: boolean) {
+	for (const scene of scenes) {
+		const gain =
+			scene.location === locations.location
+				? Math.sin(
+						((1 -
+							Math.max(
+								0,
+								Math.min(1, chebyshev(scene.position, ouija.position)),
+							)) *
+							Math.PI) /
+							2,
+					)
+				: 0;
+
+		for (const layer of scene.layers) {
+			if (layer.state === "stopped") {
+				layer.start(initial ? "0" : "@1m");
+			} else if (gain === 0) {
+				layer.stop(initial ? "0" : "@9m");
+			}
+
+			if (initial) {
+				layer.volume.value = Tone.gainToDb(gain);
+			} else {
+				layer.volume.exponentialRampTo(Tone.gainToDb(gain), "8m", "@1m");
+			}
+		}
+	}
+}
 
 root.addEventListener("click", async () => {
 	if (root.classList.contains("pending")) {
 		await Tone.start();
+		Tone.getTransport().bpm.value = 106;
 		Tone.getTransport().start("0");
+
+		console.log("waiting for layers to load");
+
+		await Promise.all(
+			Object.values(layers).map((layer) =>
+				hasLoadPromise(layer) ? layer.promise : Promise.resolve(),
+			),
+		);
+
+		console.log("done");
+
+		buildScene(true);
+
 		root.classList.remove("pending");
 	}
 });
