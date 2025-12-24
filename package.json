@@ -1,6 +1,7 @@
 {
 	"scripts": {
-		"start": "vite"
+		"start": "vite",
+		"build": "vite build"
 	},
 	"devDependencies": {
 		"@tsconfig/node24": "^24.0.3",
