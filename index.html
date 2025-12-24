@@ -9,6 +9,11 @@
 
 	<body>
 		<main id="root" class="pending">
+			<location-select
+				id="locations"
+				locations="wilderness dungeon"
+			></location-select>
+
 			<segmented-xy
 				id="ouija"
 				x-segments="exploration combat"
@@ -16,10 +21,7 @@
 			>
 			</segmented-xy>
 
-			<location-select
-				id="locations"
-				locations="wilderness dungeon"
-			></location-select>
+			<layer-debug></layer-debug>
 		</main>
 
 		<script type="module" src="./src/index.ts"></script>

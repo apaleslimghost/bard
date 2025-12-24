@@ -36,19 +36,20 @@ export default Object.fromEntries(
 
 		return [
 			name,
-			Object.assign(
-				new Tone.Player({
-					url: `/${name}.mp3`,
-					loop: true,
-					autostart: false,
-					volume: -Infinity,
-					onload: () => resolve(null),
-					onerror: reject,
-				})
-					.sync()
-					.toDestination(),
-				{ promise },
-			),
+			() =>
+				Object.assign(
+					new Tone.Player({
+						url: `/${name}.mp3`,
+						loop: true,
+						autostart: false,
+						volume: -140,
+						onload: () => resolve(null),
+						onerror: reject,
+					})
+						.sync()
+						.toDestination(),
+					{ name, promise },
+				),
 		];
 	}),
 );

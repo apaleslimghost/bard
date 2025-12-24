@@ -1,5 +1,5 @@
 import * as Tone from "tone";
-import scenes from "./scenes";
+import scenes, { Scene } from "./scenes";
 import layers from "./layers";
 
 const root = document.getElementById("root")!;
@@ -178,6 +178,7 @@ class LocationSelect extends HTMLElement {
 			input.checked = location === this.location;
 
 			input.addEventListener("input", () => {
+				this.location = location;
 				this.dispatchEvent(
 					new CustomEvent("change", { detail: { location } }),
 				);
@@ -190,8 +191,60 @@ class LocationSelect extends HTMLElement {
 	}
 }
 
+class LayerDebug extends HTMLElement {
+	layerBars: Record<string, HTMLElement> = {};
+
+	connectedCallback() {
+		const shadow = this.attachShadow({ mode: "open" });
+		const wrapper = document.createElement("div");
+		wrapper.style.display = "grid";
+		wrapper.style.gridTemplateColumns = "20rem auto";
+		shadow.appendChild(wrapper);
+
+		for (const scene of scenes) {
+			for (const layer of scene.layers) {
+				const bar = (this.layerBars[
+					scene.position[0] +
+						"," +
+						scene.position[1] +
+						scene.location +
+						layer.name
+				] = document.createElement("div"));
+				bar.style.height = "1rem";
+				bar.style.background = "white";
+				this.drawBar(scene, layer);
+				wrapper.appendChild(document.createTextNode(layer.name));
+				wrapper.appendChild(bar);
+			}
+		}
+
+		requestAnimationFrame(() => this.draw());
+	}
+
+	drawBar(scene: Scene, layer: Tone.Player) {
+		this.layerBars[
+			scene.position[0] +
+				"," +
+				scene.position[1] +
+				scene.location +
+				layer.name
+		].style.width = 100 * Tone.dbToGain(layer.volume.value) + "px";
+	}
+
+	draw() {
+		for (const scene of scenes) {
+			for (const layer of scene.layers) {
+				this.drawBar(scene, layer);
+			}
+		}
+
+		requestAnimationFrame(() => this.draw());
+	}
+}
+
 customElements.define("segmented-xy", SegmentedXY);
 customElements.define("location-select", LocationSelect);
+customElements.define("layer-debug", LayerDebug);
 
 ouija.addEventListener("move", () => buildScene(false));
 locations.addEventListener("change", () => buildScene(false));
@@ -221,15 +274,13 @@ function buildScene(initial: boolean) {
 
 		for (const layer of scene.layers) {
 			if (layer.state === "stopped") {
-				layer.start(initial ? "0" : "@1m");
-			} else if (gain === 0) {
-				layer.stop(initial ? "0" : "@9m");
+				layer.start(0);
 			}
 
 			if (initial) {
-				layer.volume.value = Tone.gainToDb(gain);
+				layer.volume.value = Math.max(-140, Tone.gainToDb(gain));
 			} else {
-				layer.volume.exponentialRampTo(Tone.gainToDb(gain), "8m", "@1m");
+				layer.volume.rampTo(Math.max(-140, Tone.gainToDb(gain)), "4m");
 			}
 		}
 	}
@@ -239,7 +290,7 @@ root.addEventListener("click", async () => {
 	if (root.classList.contains("pending")) {
 		await Tone.start();
 		Tone.getTransport().bpm.value = 106;
-		Tone.getTransport().start("0");
+		Tone.getTransport().start(0);
 
 		console.log("waiting for layers to load");
 
