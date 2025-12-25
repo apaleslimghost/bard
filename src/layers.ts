@@ -1,5 +1,9 @@
 import * as Tone from "tone";
 
+const base = import.meta.env.BASE_URL.endsWith("/")
+	? import.meta.env.BASE_URL
+	: import.meta.env.BASE_URL + "/";
+
 export default Object.fromEntries(
 	[
 		"amen",
@@ -39,7 +43,7 @@ export default Object.fromEntries(
 			() =>
 				Object.assign(
 					new Tone.Player({
-						url: `/${name}.mp3`,
+						url: base + `${name}.mp3`,
 						loop: true,
 						autostart: false,
 						volume: -140,
