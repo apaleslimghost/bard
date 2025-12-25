@@ -288,6 +288,7 @@ function buildScene(initial: boolean) {
 
 root.addEventListener("click", async () => {
 	if (root.classList.contains("pending")) {
+		root.classList.add("loading");
 		await Tone.start();
 		Tone.getTransport().bpm.value = 106;
 		Tone.getTransport().start(0);
@@ -295,8 +296,10 @@ root.addEventListener("click", async () => {
 		console.log("waiting for layers to load");
 
 		await Promise.all(
-			Object.values(layers).map((layer) =>
-				hasLoadPromise(layer) ? layer.promise : Promise.resolve(),
+			scenes.flatMap((scene) =>
+				scene.layers.map((layer) =>
+					hasLoadPromise(layer) ? layer.promise : Promise.resolve(),
+				),
 			),
 		);
 
@@ -304,6 +307,6 @@ root.addEventListener("click", async () => {
 
 		buildScene(true);
 
-		root.classList.remove("pending");
+		root.classList.remove("pending", "loading");
 	}
 });
