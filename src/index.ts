@@ -301,26 +301,33 @@ function buildScene(initial: boolean) {
 }
 
 root.addEventListener("click", async () => {
-	if (root.classList.contains("pending")) {
-		root.classList.add("loading");
-		await Tone.start();
-		Tone.getTransport().bpm.value = 106;
-		Tone.getTransport().start(0);
+	if (
+		root.classList.contains("pending") &&
+		!root.classList.contains("loading")
+	) {
+		try {
+			root.classList.add("loading");
+			await Tone.start();
+			Tone.getTransport().bpm.value = 106;
+			Tone.getTransport().start(0);
 
-		console.log("waiting for layers to load");
+			console.log("waiting for layers to load");
 
-		await Promise.all(
-			scenes.flatMap((scene) =>
-				scene.layers.map((layer) =>
-					hasLoadPromise(layer) ? layer.promise : Promise.resolve(),
+			await Promise.all(
+				scenes.flatMap((scene) =>
+					scene.layers.map((layer) =>
+						hasLoadPromise(layer) ? layer.promise : Promise.resolve(),
+					),
 				),
-			),
-		);
+			);
 
-		console.log("done");
+			console.log("done");
 
-		buildScene(true);
+			buildScene(true);
 
-		root.classList.remove("pending", "loading");
+			root.classList.remove("pending", "loading");
+		} catch {
+			root.classList.remove("loading");
+		}
 	}
 });
