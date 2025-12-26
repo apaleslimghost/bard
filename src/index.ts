@@ -281,7 +281,7 @@ function buildScene(initial: boolean) {
 			if (initial) {
 				layer.gain.value = gain;
 			} else {
-				layer.gain.rampTo(gain, "4m", "@1m");
+				layer.gain.rampTo(gain, layer.loopLength, "@1m");
 			}
 		}
 	}
