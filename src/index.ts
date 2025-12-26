@@ -1,6 +1,7 @@
 import * as Tone from "tone";
 import scenes, { Scene } from "./scenes";
 import layers from "./layers";
+import { Layer } from "./layer";
 
 const root = document.getElementById("root")!;
 const ouija = document.getElementById("ouija")! as SegmentedXY;
@@ -217,32 +218,20 @@ class LayerDebug extends HTMLElement {
 				const text = document.createTextNode(layer.name);
 				wrapper.appendChild(text);
 				wrapper.appendChild(bar);
-
-				if (hasLoadPromise(layer))
-					layer.promise.then(
-						() =>
-							(text.textContent +=
-								" " +
-								Tone.Time(layer.buffer.duration).toSeconds() +
-								" " +
-								Tone.Time(
-									layer.buffer.duration,
-								).toBarsBeatsSixteenths()),
-					);
 			}
 		}
 
 		requestAnimationFrame(() => this.draw());
 	}
 
-	drawBar(scene: Scene, layer: Tone.Player) {
+	drawBar(scene: Scene, layer: Layer) {
 		this.layerBars[
 			scene.position[0] +
 				"," +
 				scene.position[1] +
 				scene.location +
 				layer.name
-		].style.width = 100 * Tone.dbToGain(layer.volume.value) + "px";
+		].style.width = 100 * layer.gain.value + "px";
 	}
 
 	draw() {
@@ -287,18 +276,20 @@ function buildScene(initial: boolean) {
 				: 0;
 
 		for (const layer of scene.layers) {
-			if (layer.state === "stopped") {
-				layer.start(0);
-			}
+			layer.start(0);
 
 			if (initial) {
-				layer.volume.value = Math.max(-140, Tone.gainToDb(gain));
+				layer.gain.value = gain;
 			} else {
-				layer.volume.rampTo(Math.max(-140, Tone.gainToDb(gain)), "4m");
+				layer.gain.rampTo(gain, "4m");
 			}
 		}
 	}
 }
+
+const loadPromise = Promise.all(
+	scenes.flatMap((scene) => scene.layers.map((layer) => layer.load())),
+);
 
 root.addEventListener("click", async () => {
 	if (
@@ -313,13 +304,7 @@ root.addEventListener("click", async () => {
 
 			console.log("waiting for layers to load");
 
-			await Promise.all(
-				scenes.flatMap((scene) =>
-					scene.layers.map((layer) =>
-						hasLoadPromise(layer) ? layer.promise : Promise.resolve(),
-					),
-				),
-			);
+			await loadPromise;
 
 			console.log("done");
 

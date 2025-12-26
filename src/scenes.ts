@@ -8,12 +8,12 @@ TODO
 */
 
 import * as Tone from "tone";
-import layers from "./layers";
+import { Layer } from "./layer";
 
 export type Scene = {
 	position: [number, number];
 	location: string;
-	layers: Tone.Player[];
+	layers: Layer[];
 };
 
 const scenes = [
@@ -21,91 +21,91 @@ const scenes = [
 		position: [0, 0],
 		location: "wilderness",
 		layers: [
-			layers["foley"](),
-			layers["clarinet"](),
-			layers["bansuri"](),
-			layers["ethereal"](),
+			new Layer("foley"),
+			new Layer("clarinet"),
+			new Layer("bansuri"),
+			new Layer("ethereal"),
 		],
 	},
 	{
 		position: [1, 0],
 		location: "wilderness",
 		layers: [
-			layers["wood"](),
-			layers["hats"](),
-			layers["clarinet"](),
-			layers["bansuri"](),
-			layers["cello"](),
-			layers["pads"](),
-			layers["poly"](),
+			new Layer("wood"),
+			new Layer("hats"),
+			new Layer("clarinet"),
+			new Layer("bansuri"),
+			new Layer("cello"),
+			new Layer("pads"),
+			new Layer("poly"),
 		],
 	},
 	{
 		position: [0, 1],
 		location: "wilderness",
 		layers: [
-			layers["piano-foley"](),
-			layers["string-chords"](),
-			layers["bells"](),
-			layers["apprehensive"](),
-			layers["cyclical"](),
+			new Layer("piano-foley"),
+			new Layer("string-chords"),
+			new Layer("bells"),
+			new Layer("apprehensive"),
+			new Layer("cyclical"),
 		],
 	},
 	{
 		position: [1, 1],
 		location: "wilderness",
 		layers: [
-			layers["piano-foley"](),
-			layers["amen"](),
-			layers["string-chords"](),
-			layers["bonks"](),
-			layers["apprehensive"](),
-			layers["cyclical2"](),
-			layers["impending"](),
+			new Layer("piano-foley"),
+			new Layer("amen"),
+			new Layer("string-chords"),
+			new Layer("bonks"),
+			new Layer("apprehensive"),
+			new Layer("cyclical2"),
+			new Layer("impending"),
 		],
 	},
 	{
 		position: [0, 0],
 		location: "dungeon",
 		layers: [
-			layers["discord"](),
-			layers["gloaming"](),
-			layers["trepidation"](),
+			new Layer("discord"),
+			new Layer("gloaming"),
+			new Layer("trepidation"),
 		],
 	},
 	{
 		position: [1, 0],
 		location: "dungeon",
 		layers: [
-			layers["foley"](),
-			layers["discord"](),
-			layers["gloaming"](),
-			layers["trepidation"](),
-			layers["pulse"](),
-			layers["tension"](),
+			new Layer("foley"),
+			new Layer("discord"),
+			new Layer("gloaming"),
+			new Layer("trepidation"),
+			new Layer("pulse"),
+			new Layer("tension"),
 		],
 	},
 	{
 		position: [0, 1],
 		location: "dungeon",
 		layers: [
-			layers["cello-foley"](),
-			layers["bonks"](),
-			layers["bells"](),
-			layers["spooky"](),
-			layers["metallic"](),
+			new Layer("cello-foley"),
+			new Layer("bonks"),
+			new Layer("bells"),
+			new Layer("spooky"),
+			new Layer("metallic"),
 		],
 	},
 	{
 		position: [1, 1],
 		location: "dungeon",
 		layers: [
-			layers["foley"](),
-			layers["cello-foley"](),
-			layers["barrels"](),
-			layers["spooky"](),
-			layers["metallic"](),
-			layers["pulse2"](),
+			new Layer("foley"),
+			new Layer("cello-foley"),
+			new Layer("barrels"),
+			new Layer("spooky"),
+			new Layer("metallic"),
+			new Layer("pulse2"),
 		],
 	},
 ] satisfies Scene[];
