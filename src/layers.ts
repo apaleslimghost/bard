@@ -43,7 +43,7 @@ export default Object.fromEntries(
 			() =>
 				Object.assign(
 					new Tone.Player({
-						url: base + `${name}.mp3`,
+						url: base + `${name}.opus`,
 						loop: true,
 						autostart: false,
 						volume: -140,

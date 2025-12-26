@@ -213,8 +213,22 @@ class LayerDebug extends HTMLElement {
 				bar.style.height = "1rem";
 				bar.style.background = "white";
 				this.drawBar(scene, layer);
-				wrapper.appendChild(document.createTextNode(layer.name));
+
+				const text = document.createTextNode(layer.name);
+				wrapper.appendChild(text);
 				wrapper.appendChild(bar);
+
+				if (hasLoadPromise(layer))
+					layer.promise.then(
+						() =>
+							(text.textContent +=
+								" " +
+								Tone.Time(layer.buffer.duration).toSeconds() +
+								" " +
+								Tone.Time(
+									layer.buffer.duration,
+								).toBarsBeatsSixteenths()),
+					);
 			}
 		}
 
