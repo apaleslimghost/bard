@@ -33,7 +33,7 @@ const scenes = [
 		layers: [
 			new Layer("wood"),
 			new Layer("hats"),
-			new Layer("clarinet"),
+			new Layer("clarinet2"),
 			new Layer("bansuri"),
 			new Layer("cello"),
 			new Layer("pads"),

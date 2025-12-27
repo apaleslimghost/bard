@@ -276,7 +276,7 @@ function buildScene(initial: boolean) {
 				: 0;
 
 		for (const layer of scene.layers) {
-			layer.start(0);
+			layer.start("@1m");
 
 			if (initial) {
 				layer.gain.value = gain;
