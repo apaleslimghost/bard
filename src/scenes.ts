@@ -10,6 +10,8 @@ TODO
 import * as Tone from "tone";
 import { Layer } from "./layer";
 
+export type Pos = [number, number];
+
 export type Scene = {
 	position: [number, number];
 	location: string;

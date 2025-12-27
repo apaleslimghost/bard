@@ -1,6 +1,7 @@
 import * as Tone from "tone";
-import scenes, { Scene } from "./scenes";
+import scenes, { Scene, Pos } from "./scenes";
 import { Layer } from "./layer";
+import { Loop } from "./loop";
 
 const root = document.getElementById("root")!;
 const ouija = document.getElementById("ouija")! as SegmentedXY;
@@ -9,8 +10,6 @@ const locations = document.getElementById("locations")! as LocationSelect;
 type WithLoadPromise<T extends object> = T & {
 	promise: Promise<null>;
 };
-
-type Pos = [number, number];
 
 const hasLoadPromise = <T extends object>(o: T): o is WithLoadPromise<T> =>
 	"promise" in o && o.promise instanceof Promise;
@@ -248,47 +247,12 @@ customElements.define("segmented-xy", SegmentedXY);
 customElements.define("location-select", LocationSelect);
 customElements.define("layer-debug", LayerDebug);
 
-ouija.addEventListener("move", () => buildScene(false));
-locations.addEventListener("change", () => buildScene(false));
-
-const chebyshev = (p1: Pos, p2: Pos) =>
-	Math.max(Math.abs(p1[0] - p2[0]), Math.abs(p1[1] - p2[1]));
-
-/*
-TODO
-- track currently/previously playing location/scene and fade out
-*/
-
-function buildScene(initial: boolean) {
-	for (const scene of scenes) {
-		const gain =
-			scene.location === locations.location
-				? Math.sin(
-						((1 -
-							Math.max(
-								0,
-								Math.min(1, chebyshev(scene.position, ouija.position)),
-							)) *
-							Math.PI) /
-							2,
-					)
-				: 0;
-
-		for (const layer of scene.layers) {
-			if (gain > 0.01) {
-				layer.start("@1m");
-			} else {
-				layer.stop(Tone.Time("@1m").toSeconds() + layer.loopLength);
-			}
-
-			if (initial) {
-				layer.gain.value = gain;
-			} else {
-				layer.gain.rampTo(gain, layer.loopLength, "@1m");
-			}
-		}
-	}
-}
+ouija.addEventListener("move", () =>
+	Loop.build(false, ouija.position, locations.location),
+);
+locations.addEventListener("change", () =>
+	Loop.build(false, ouija.position, locations.location),
+);
 
 const loadPromise = Promise.all(
 	scenes.flatMap((scene) => scene.layers.map((layer) => layer.load())),
@@ -311,7 +275,7 @@ root.addEventListener("click", async () => {
 
 			console.log("done");
 
-			buildScene(true);
+			Loop.build(true, ouija.position, locations.location);
 
 			root.classList.remove("pending", "loading");
 		} catch (e) {
