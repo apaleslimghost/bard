@@ -64,7 +64,7 @@ export class Layer {
 	}
 
 	stop(time: Tone.Unit.Time) {
-		for (const player of Object.values(this.players.stop)) {
+		for (const player of Object.values(this.players)) {
 			player.stop(time);
 		}
 	}

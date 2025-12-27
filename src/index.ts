@@ -275,7 +275,11 @@ function buildScene(initial: boolean) {
 				: 0;
 
 		for (const layer of scene.layers) {
-			layer.start("@1m");
+			if (gain > 0.01) {
+				layer.start("@1m");
+			} else {
+				layer.stop(Tone.Time("@1m").toSeconds() + layer.loopLength);
+			}
 
 			if (initial) {
 				layer.gain.value = gain;
@@ -310,7 +314,8 @@ root.addEventListener("click", async () => {
 			buildScene(true);
 
 			root.classList.remove("pending", "loading");
-		} catch {
+		} catch (e) {
+			console.error(e);
 			root.classList.remove("loading");
 		}
 	}
