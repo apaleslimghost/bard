@@ -1,10 +1,8 @@
 /*
 TODO
 - loop start samples
-- loop tail samples
 - intro samples
 - loop variations
-- drum loops start full volume at 0.5 distance instead of fading in
 */
 
 import * as Tone from "tone";
