@@ -7,6 +7,7 @@ const base = import.meta.env.BASE_URL.endsWith("/")
 type LayerOptions = {
 	name: string;
 	variants?: string[];
+	tail?: boolean;
 };
 
 export class Layer {
@@ -16,13 +17,16 @@ export class Layer {
 	public variants: string[];
 	public currentVariant: string;
 	private startedAt?: number;
+	private tail: boolean;
+	private tailPlayer?: Tone.Player;
 
 	static output = new Tone.Limiter(-12).toDestination();
 
-	constructor({ name, variants = ["a"] }: LayerOptions) {
+	constructor({ name, variants = ["a"], tail = true }: LayerOptions) {
 		this.name = name;
 		this.variants = variants;
 		this.currentVariant = variants[0];
+		this.tail = tail;
 
 		this._gain = new Tone.Gain({
 			gain: 0,
@@ -38,6 +42,12 @@ export class Layer {
 				.sync()
 				.connect(this._gain);
 		}
+
+		if (tail) {
+			this.tailPlayer = new Tone.Player({
+				autostart: false,
+			}).connect(this._gain);
+		}
 	}
 
 	buildUrl(variant: string) {
@@ -45,11 +55,12 @@ export class Layer {
 	}
 
 	async load() {
-		return Promise.all(
-			this.variants.map((variant) =>
+		return Promise.all([
+			...this.variants.map((variant) =>
 				this.players[variant].load(this.buildUrl(variant)),
 			),
-		);
+			this.tailPlayer?.load(this.buildUrl("tail")),
+		]);
 	}
 
 	get loaded() {
@@ -63,15 +74,21 @@ export class Layer {
 	start(time: Tone.Unit.Time) {
 		if (this.players[this.currentVariant].state === "started") return;
 
+		this.tailPlayer?.stop(time);
 		this.players[this.currentVariant].loop = true;
 		this.players[this.currentVariant].start(time);
 		this.startedAt = Tone.TransportTime(time).toSeconds();
-		this.gain.rampTo(1, this.loopLength, time);
+		this.gain.rampTo(
+			1,
+			Math.min(this.loopLength, Tone.Time("4m").toSeconds()),
+			time,
+		);
 	}
 
 	stop(time: Tone.Unit.Time) {
 		const remainingLoop =
-			2 * this.loopLength -
+			this.players[this.currentVariant].now() +
+			this.loopLength -
 			((this.players[this.currentVariant].now() - (this.startedAt ?? 0)) %
 				this.loopLength);
 
@@ -79,7 +96,15 @@ export class Layer {
 			player.stop(remainingLoop);
 		}
 
-		this.gain.rampTo(0, remainingLoop);
+		if (this.tailPlayer) {
+			this.tailPlayer.restart(remainingLoop);
+			this.gain.setValueAtTime(
+				0,
+				remainingLoop + this.tailPlayer.buffer.duration,
+			);
+		} else {
+			this.gain.rampTo(0, remainingLoop);
+		}
 	}
 
 	get loopLength() {
