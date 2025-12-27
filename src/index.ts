@@ -1,6 +1,5 @@
 import * as Tone from "tone";
 import scenes, { Scene } from "./scenes";
-import layers from "./layers";
 import { Layer } from "./layer";
 
 const root = document.getElementById("root")!;

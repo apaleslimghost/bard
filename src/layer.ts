@@ -4,61 +4,72 @@ const base = import.meta.env.BASE_URL.endsWith("/")
 	? import.meta.env.BASE_URL
 	: import.meta.env.BASE_URL + "/";
 
+type LayerOptions = {
+	name: string;
+	variants?: string[];
+};
+
 export class Layer {
-	private player: Tone.Player;
+	private players: Record<string, Tone.Player> = {};
 	private _gain: Tone.Gain;
+	public name: string;
+	public variants: string[];
+	public currentVariant: string;
 
 	static output = new Tone.Limiter(-12).toDestination();
 
-	constructor(public name: string) {
+	constructor({ name, variants = ["a"] }: LayerOptions) {
+		this.name = name;
+		this.variants = variants;
+		this.currentVariant = variants[0];
+
 		this._gain = new Tone.Gain({
 			gain: 0,
 			units: "gain",
 			convert: true,
 		}).connect(Layer.output);
 
-		this.player = new Tone.Player({
-			loop: true,
-			autostart: false,
-		})
-			.sync()
-			.connect(this._gain);
+		for (const variant of variants) {
+			this.players[variant] = new Tone.Player({
+				loop: true,
+				autostart: false,
+			})
+				.sync()
+				.connect(this._gain);
+		}
+	}
+
+	buildUrl(variant: string) {
+		return base + `${this.name}/${variant}.opus`;
 	}
 
 	async load() {
-		return this.player.load(base + `${this.name}.opus`);
+		return Promise.all(
+			this.variants.map((variant) =>
+				this.players[variant].load(this.buildUrl(variant)),
+			),
+		);
 	}
 
 	get loaded() {
-		return this.player.loaded;
+		return this.players.loaded;
 	}
 
 	get gain() {
 		return this._gain.gain;
 	}
 
-	get progress() {
-		if (this.player.state === "stopped") {
-			return 0;
-		}
-
-		return (
-			(Tone.getTransport().toSeconds() % this.player.buffer.duration) /
-			this.player.buffer.duration
-		);
-	}
-
 	start(time: Tone.Unit.Time) {
-		if (this.player.state === "stopped") {
-			return this.player.start(time);
-		}
+		return this.players[this.currentVariant].start(time);
 	}
 
 	stop(time: Tone.Unit.Time) {
-		this.player.stop(time);
+		for (const player of Object.values(this.players.stop)) {
+			player.stop(time);
+		}
 	}
 
 	get loopLength() {
-		return this.player.buffer.duration;
+		return this.players[this.currentVariant].buffer.duration;
 	}
 }
