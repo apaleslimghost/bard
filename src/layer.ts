@@ -8,12 +8,14 @@ export class Layer {
 	private player: Tone.Player;
 	private _gain: Tone.Gain;
 
+	static output = new Tone.Limiter(-12).toDestination();
+
 	constructor(public name: string) {
 		this._gain = new Tone.Gain({
 			gain: 0,
 			units: "gain",
 			convert: true,
-		}).toDestination();
+		}).connect(Layer.output);
 
 		this.player = new Tone.Player({
 			loop: true,
