@@ -15,6 +15,7 @@ export class Layer {
 	public name: string;
 	public variants: string[];
 	public currentVariant: string;
+	private startedAt?: number;
 
 	static output = new Tone.Limiter(-12).toDestination();
 
@@ -60,13 +61,25 @@ export class Layer {
 	}
 
 	start(time: Tone.Unit.Time) {
-		return this.players[this.currentVariant].start(time);
+		if (this.players[this.currentVariant].state === "started") return;
+
+		this.players[this.currentVariant].loop = true;
+		this.players[this.currentVariant].start(time);
+		this.startedAt = Tone.TransportTime(time).toSeconds();
+		this.gain.rampTo(1, this.loopLength, time);
 	}
 
 	stop(time: Tone.Unit.Time) {
+		const remainingLoop =
+			2 * this.loopLength -
+			((this.players[this.currentVariant].now() - (this.startedAt ?? 0)) %
+				this.loopLength);
+
 		for (const player of Object.values(this.players)) {
-			player.stop(time);
+			player.stop(remainingLoop);
 		}
+
+		this.gain.rampTo(0, remainingLoop);
 	}
 
 	get loopLength() {

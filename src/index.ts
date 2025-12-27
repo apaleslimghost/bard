@@ -3,6 +3,8 @@ import scenes, { Scene, Pos } from "./scenes";
 import { Layer } from "./layer";
 import { Loop } from "./loop";
 
+Object.assign(window, { Tone });
+
 const root = document.getElementById("root")!;
 const ouija = document.getElementById("ouija")! as SegmentedXY;
 const locations = document.getElementById("locations")! as LocationSelect;
@@ -248,10 +250,10 @@ customElements.define("location-select", LocationSelect);
 customElements.define("layer-debug", LayerDebug);
 
 ouija.addEventListener("move", () =>
-	Loop.build(false, ouija.position, locations.location),
+	Loop.build(ouija.position, locations.location),
 );
 locations.addEventListener("change", () =>
-	Loop.build(false, ouija.position, locations.location),
+	Loop.build(ouija.position, locations.location),
 );
 
 const loadPromise = Promise.all(
@@ -275,7 +277,7 @@ root.addEventListener("click", async () => {
 
 			console.log("done");
 
-			Loop.build(true, ouija.position, locations.location);
+			Loop.build(ouija.position, locations.location);
 
 			root.classList.remove("pending", "loading");
 		} catch (e) {

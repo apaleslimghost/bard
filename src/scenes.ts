@@ -35,7 +35,7 @@ const scenes = [
 		layers: [
 			new Layer({ name: "wood" }),
 			new Layer({ name: "hats" }),
-			new Layer({ name: "clarinet", variants: ["a", "b"] }),
+			new Layer({ name: "clarinet", variants: ["b"] }),
 			new Layer({ name: "bansuri" }),
 			new Layer({ name: "cello" }),
 			new Layer({ name: "pads" }),
