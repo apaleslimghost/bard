@@ -219,6 +219,8 @@ class LayerDebug extends HTMLElement {
 
 	drawBar(layer: Layer) {
 		this.layerBars[layer.name].style.width = 100 * layer.gain.value + "px";
+		this.layerBars[layer.name].style.background =
+			layer.state === "tail" ? "red" : "white";
 	}
 
 	draw() {
@@ -235,10 +237,10 @@ customElements.define("location-select", LocationSelect);
 customElements.define("layer-debug", LayerDebug);
 
 ouija.addEventListener("move", () =>
-	Loop.build(ouija.position, locations.location),
+	Loop.build(false, ouija.position, locations.location),
 );
 locations.addEventListener("change", () =>
-	Loop.build(ouija.position, locations.location),
+	Loop.build(false, ouija.position, locations.location),
 );
 
 const loadPromise = Promise.all(
@@ -262,7 +264,7 @@ root.addEventListener("click", async () => {
 
 			console.log("done");
 
-			Loop.build(ouija.position, locations.location);
+			Loop.build(true, ouija.position, locations.location);
 
 			root.classList.remove("pending", "loading");
 		} catch (e) {

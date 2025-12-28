@@ -16,7 +16,6 @@ export class Layer {
 	public name: string;
 	public variants: string[];
 	public currentVariant: string;
-	private startedAt?: number;
 	private tail: boolean;
 	private tailPlayer?: Tone.Player;
 
@@ -71,44 +70,58 @@ export class Layer {
 		return this._gain.gain;
 	}
 
-	start(time: Tone.Unit.Time) {
+	start() {
 		if (this.players[this.currentVariant].state === "started") return;
+		const start = Tone.TransportTime("@4m");
+		const fadeIn = Tone.Time("4m").toSeconds();
 
-		this.tailPlayer?.stop(time);
+		this.tailPlayer?.stop(start.toSeconds());
 		this.players[this.currentVariant].loop = true;
-		this.players[this.currentVariant].start(time);
-		this.startedAt = Tone.TransportTime(time).toSeconds();
-		this.gain.rampTo(
-			1,
-			Math.min(this.loopLength, Tone.Time("4m").toSeconds()),
-			time,
+		console.log(
+			"starting",
+			this.name,
+			"at",
+			Tone.TransportTime(
+				Math.max(0, start.toSeconds() - fadeIn),
+			).toBarsBeatsSixteenths(),
+			"fading to 1 by",
+			start.toBarsBeatsSixteenths(),
 		);
+		this.players[this.currentVariant].start(
+			Math.max(0, start.toSeconds() - fadeIn),
+		);
+		this.gain.rampTo(1, fadeIn, Math.max(0, start.toSeconds() - fadeIn));
 	}
 
-	stop(time: Tone.Unit.Time) {
-		const remainingLoop =
-			this.players[this.currentVariant].now() +
-			this.loopLength -
-			((this.players[this.currentVariant].now() - (this.startedAt ?? 0)) %
-				this.loopLength);
+	stop() {
+		const end = Tone.TransportTime("@4m");
+
+		console.log("stopping", this.name, "at", end.toBarsBeatsSixteenths());
 
 		for (const player of Object.values(this.players)) {
-			player.stop(remainingLoop);
+			player.stop(end.toSeconds());
 		}
 
 		if (this.tailPlayer) {
-			this.tailPlayer.restart(remainingLoop);
+			console.log("playing", this.name, "tail");
+			this.tailPlayer.restart(end.toSeconds());
 			this.gain.setValueAtTime(
 				0,
-				remainingLoop + this.tailPlayer.buffer.duration,
+				end.toSeconds() + this.tailPlayer.buffer.duration,
 			);
 		} else {
-			this.gain.rampTo(0, remainingLoop);
+			this.gain.rampTo(0, Math.max(0, end.toSeconds() - this.gain.now()));
 		}
 	}
 
 	get loopLength() {
 		return this.players[this.currentVariant].buffer.duration;
+	}
+
+	get state() {
+		return this.tailPlayer?.state === "started"
+			? "tail"
+			: this.players[this.currentVariant].state;
 	}
 }
 

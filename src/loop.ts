@@ -24,7 +24,7 @@ const increasingWeight = (b: number) =>
 export class Loop {
 	static current?: Loop;
 
-	static build(position: Pos, location: string) {
+	static build(initial: boolean, position: Pos, location: string) {
 		const layers = scenes.flatMap((scene) => {
 			const amount =
 				scene.location === location
@@ -50,7 +50,7 @@ export class Loop {
 
 	start() {
 		for (const layer of this.layers) {
-			layer.start("@1m");
+			layer.start();
 		}
 
 		return this;
@@ -59,7 +59,7 @@ export class Loop {
 	stop(nextLayers: Layer[]) {
 		for (const layer of this.layers) {
 			if (!nextLayers.includes(layer)) {
-				layer.stop("@1m");
+				layer.stop();
 			}
 		}
 	}
