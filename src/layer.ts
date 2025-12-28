@@ -92,7 +92,8 @@ export class Layer {
 		}
 
 		if (this.tailPlayer) {
-			this.tailPlayer.restart(end);
+			this.tailPlayer.stop();
+			this.tailPlayer.start(end);
 			this.gain.setValueAtTime(0, end + this.tailPlayer.buffer.duration);
 		} else {
 			this.gain.rampTo(0, fadeOut, oneBarQuant);
