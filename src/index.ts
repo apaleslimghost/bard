@@ -2,6 +2,7 @@ import * as Tone from "tone";
 import scenes, { Scene, Pos } from "./scenes";
 import { Layer, layers } from "./layer";
 import { Loop } from "./loop";
+import { Oscilloscope } from "./oscilloscope";
 
 Object.assign(window, { Tone });
 
@@ -199,22 +200,32 @@ class LayerDebug extends HTMLElement {
 		const shadow = this.attachShadow({ mode: "open" });
 		const wrapper = document.createElement("div");
 		wrapper.style.display = "grid";
-		wrapper.style.gridTemplateColumns = "20rem auto";
+		wrapper.style.gridTemplateColumns = "10rem 120px auto";
 		shadow.appendChild(wrapper);
 
 		for (const layer of Object.values(layers)) {
+			const barWrapper = document.createElement("div");
 			const bar = (this.layerBars[layer.name] =
 				document.createElement("div"));
 			bar.style.height = "1rem";
 			bar.style.background = "white";
 			this.drawBar(layer);
+			barWrapper.appendChild(bar);
+
+			const canvas = document.createElement("canvas");
+			canvas.height = 32;
+			canvas.width = 200;
+			canvas.style.width = "100px";
+			canvas.style.height = "16px";
+
+			new Oscilloscope(layer._gain, canvas).run();
+			requestAnimationFrame(() => this.draw());
 
 			const text = document.createTextNode(layer.name);
 			wrapper.appendChild(text);
-			wrapper.appendChild(bar);
+			wrapper.appendChild(barWrapper);
+			wrapper.appendChild(canvas);
 		}
-
-		requestAnimationFrame(() => this.draw());
 	}
 
 	drawBar(layer: Layer) {

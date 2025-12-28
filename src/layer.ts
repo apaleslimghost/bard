@@ -12,7 +12,7 @@ type LayerOptions = {
 
 export class Layer {
 	private players: Record<string, Tone.Player> = {};
-	private _gain: Tone.Gain;
+	public _gain: Tone.Gain;
 	public name: string;
 	public variants: string[];
 	public currentVariant: string;
