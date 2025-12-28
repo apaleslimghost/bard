@@ -72,45 +72,30 @@ export class Layer {
 
 	start() {
 		if (this.players[this.currentVariant].state === "started") return;
-		const start = Tone.TransportTime("@4m");
+		const oneBarQuant = Tone.TransportTime("@1m").toSeconds();
 		const fadeIn = Tone.Time("4m").toSeconds();
+		const start = oneBarQuant + fadeIn;
 
-		this.tailPlayer?.stop(start.toSeconds());
+		this.tailPlayer?.stop(start);
 		this.players[this.currentVariant].loop = true;
-		console.log(
-			"starting",
-			this.name,
-			"at",
-			Tone.TransportTime(
-				Math.max(0, start.toSeconds() - fadeIn),
-			).toBarsBeatsSixteenths(),
-			"fading to 1 by",
-			start.toBarsBeatsSixteenths(),
-		);
-		this.players[this.currentVariant].start(
-			Math.max(0, start.toSeconds() - fadeIn),
-		);
-		this.gain.rampTo(1, fadeIn, Math.max(0, start.toSeconds() - fadeIn));
+		this.players[this.currentVariant].start(oneBarQuant);
+		this.gain.rampTo(1, fadeIn, oneBarQuant);
 	}
 
 	stop() {
-		const end = Tone.TransportTime("@4m");
-
-		console.log("stopping", this.name, "at", end.toBarsBeatsSixteenths());
+		const oneBarQuant = Tone.TransportTime("@1m").toSeconds();
+		const fadeOut = Tone.Time("4m").toSeconds();
+		const end = oneBarQuant + fadeOut;
 
 		for (const player of Object.values(this.players)) {
-			player.stop(end.toSeconds());
+			player.stop(end);
 		}
 
 		if (this.tailPlayer) {
-			console.log("playing", this.name, "tail");
-			this.tailPlayer.restart(end.toSeconds());
-			this.gain.setValueAtTime(
-				0,
-				end.toSeconds() + this.tailPlayer.buffer.duration,
-			);
+			this.tailPlayer.restart(end);
+			this.gain.setValueAtTime(0, end + this.tailPlayer.buffer.duration);
 		} else {
-			this.gain.rampTo(0, Math.max(0, end.toSeconds() - this.gain.now()));
+			this.gain.rampTo(0, fadeOut, oneBarQuant);
 		}
 	}
 
