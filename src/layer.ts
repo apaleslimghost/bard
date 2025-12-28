@@ -92,9 +92,17 @@ export class Layer {
 		}
 
 		if (this.tailPlayer) {
+			const tailEnd =
+				end +
+				Math.min(
+					Tone.Time("1m").toSeconds(),
+					this.tailPlayer.buffer.duration,
+				);
+
 			this.tailPlayer.stop();
 			this.tailPlayer.start(end);
-			this.gain.setValueAtTime(0, end + this.tailPlayer.buffer.duration);
+			this.tailPlayer.stop(tailEnd);
+			this.gain.setValueAtTime(0, tailEnd);
 		} else {
 			this.gain.rampTo(0, fadeOut, oneBarQuant);
 		}
