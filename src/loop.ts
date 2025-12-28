@@ -4,8 +4,7 @@ import scenes, { Scene, Pos } from "./scenes";
 import sortBy from "lodash/sortBy";
 import popcount from "@f/popcount";
 
-const chebyshev = (p1: Pos, p2: Pos) =>
-	Math.max(Math.abs(p1[0] - p2[0]), Math.abs(p1[1] - p2[1]));
+const distance = (p1: Pos, p2: Pos) => Math.hypot(p1[0] - p2[0], p1[1] - p2[1]);
 
 const increasingWeight = (b: number) =>
 	sortBy(
@@ -30,7 +29,7 @@ export class Loop {
 			const amount =
 				scene.location === location
 					? 1 -
-						Math.max(0, Math.min(1, chebyshev(scene.position, position)))
+						Math.max(0, Math.min(1, distance(scene.position, position)))
 					: 0;
 
 			const layerMap = increasingWeight(scene.layers.length);
@@ -40,6 +39,14 @@ export class Loop {
 			const layers = scene.layers.filter(
 				(layer, index) => whichLayers[index],
 			);
+
+			console.log(
+				scene.position,
+				scene.location,
+				amount,
+				layers.map((l) => l.name),
+			);
+
 			return layers;
 		});
 
