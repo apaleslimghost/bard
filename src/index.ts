@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 import scenes, { Scene, Pos } from "./scenes";
-import { Layer } from "./layer";
+import { Layer, layers } from "./layer";
 import { Loop } from "./loop";
 
 Object.assign(window, { Tone });
@@ -202,43 +202,28 @@ class LayerDebug extends HTMLElement {
 		wrapper.style.gridTemplateColumns = "20rem auto";
 		shadow.appendChild(wrapper);
 
-		for (const scene of scenes) {
-			for (const layer of scene.layers) {
-				const bar = (this.layerBars[
-					scene.position[0] +
-						"," +
-						scene.position[1] +
-						scene.location +
-						layer.name
-				] = document.createElement("div"));
-				bar.style.height = "1rem";
-				bar.style.background = "white";
-				this.drawBar(scene, layer);
+		for (const layer of Object.values(layers)) {
+			const bar = (this.layerBars[layer.name] =
+				document.createElement("div"));
+			bar.style.height = "1rem";
+			bar.style.background = "white";
+			this.drawBar(layer);
 
-				const text = document.createTextNode(layer.name);
-				wrapper.appendChild(text);
-				wrapper.appendChild(bar);
-			}
+			const text = document.createTextNode(layer.name);
+			wrapper.appendChild(text);
+			wrapper.appendChild(bar);
 		}
 
 		requestAnimationFrame(() => this.draw());
 	}
 
-	drawBar(scene: Scene, layer: Layer) {
-		this.layerBars[
-			scene.position[0] +
-				"," +
-				scene.position[1] +
-				scene.location +
-				layer.name
-		].style.width = 100 * layer.gain.value + "px";
+	drawBar(layer: Layer) {
+		this.layerBars[layer.name].style.width = 100 * layer.gain.value + "px";
 	}
 
 	draw() {
-		for (const scene of scenes) {
-			for (const layer of scene.layers) {
-				this.drawBar(scene, layer);
-			}
+		for (const layer of Object.values(layers)) {
+			this.drawBar(layer);
 		}
 
 		requestAnimationFrame(() => this.draw());

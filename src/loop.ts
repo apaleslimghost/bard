@@ -39,18 +39,10 @@ export class Loop {
 			const layers = scene.layers.filter(
 				(layer, index) => whichLayers[index],
 			);
-
-			console.log(
-				scene.position,
-				scene.location,
-				amount,
-				layers.map((l) => l.name),
-			);
-
 			return layers;
 		});
 
-		Loop.current?.stop();
+		Loop.current?.stop(layers);
 		Loop.current = new Loop(layers).start();
 	}
 
@@ -64,9 +56,11 @@ export class Loop {
 		return this;
 	}
 
-	stop() {
+	stop(nextLayers: Layer[]) {
 		for (const layer of this.layers) {
-			layer.stop("@1m");
+			if (!nextLayers.includes(layer)) {
+				layer.stop("@1m");
+			}
 		}
 	}
 }

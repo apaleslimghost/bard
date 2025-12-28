@@ -111,3 +111,36 @@ export class Layer {
 		return this.players[this.currentVariant].buffer.duration;
 	}
 }
+
+export const layers: Record<string, Layer> = Object.fromEntries(
+	[
+		new Layer({ name: "amen", tail: false }),
+		new Layer({ name: "apprehensive" }),
+		new Layer({ name: "bansuri" }),
+		new Layer({ name: "barrels" }),
+		new Layer({ name: "bells", tail: false }),
+		new Layer({ name: "bonks", tail: false }),
+		new Layer({ name: "cello" }),
+		new Layer({ name: "cello-foley" }),
+		new Layer({ name: "clarinet" }),
+		new Layer({ name: "cyclical" }),
+		new Layer({ name: "cyclical2", tail: false }),
+		new Layer({ name: "discord" }),
+		new Layer({ name: "ethereal" }),
+		new Layer({ name: "foley" }),
+		new Layer({ name: "gloaming" }),
+		new Layer({ name: "hats", tail: false }),
+		new Layer({ name: "impending" }),
+		new Layer({ name: "metallic", tail: false }),
+		new Layer({ name: "pads" }),
+		new Layer({ name: "piano-foley" }),
+		new Layer({ name: "poly", tail: false }),
+		new Layer({ name: "pulse" }),
+		new Layer({ name: "pulse2" }),
+		new Layer({ name: "spooky" }),
+		new Layer({ name: "string-chords" }),
+		new Layer({ name: "tension" }),
+		new Layer({ name: "trepidation" }),
+		new Layer({ name: "wood" }),
+	].map((l) => [l.name, l]),
+);
